@@ -18,14 +18,10 @@
 #ifndef PARSER_H_
 
 #include <vector>
-#include <Magick++.h>
-#include <opencv2/core/core.hpp>
+#include <string>
 
 using std::vector;
 using std::string;
-using Magick::Image;
-using cv::Mat;
-using cv::Point;
 
 class parser {
 /* public functions */
@@ -35,18 +31,12 @@ public:
      * @param name Name of the window
      * @param gui whether or not to show a GUI
      */
-    parser(const char *name, bool gui = true, int delayTime = 1);
+    parser(const char *name, int delayTime = 1);
 
     /*!
      * Destructs a parser object
      */
     virtual ~parser();
-
-    /*!
-     * Determines whether or not to use a gui
-     * @param gui use a gui
-     */
-    void setGui(bool gui = true);
 
     /*!
      * Sets the verbosity of the program
@@ -59,18 +49,6 @@ public:
      * @param c character to parse
      */
     void update(char c);
-
-    /*!
-     * Writes a gif map animation
-     * @param filename the file to be written
-     */
-    void writeMap(const char *filename);
-
-    /*!
-     * Writes a gif laser animation
-     * @param filename the file to be written
-     */
-    void writeAnim(const char *filename);
 
 /* private functions */
 private:
@@ -104,11 +82,6 @@ private:
     void processText();
 
     /*!
-     * Processes a map message
-     */
-    void processMap();
-
-    /*!
      * Processes a laser message
      */
     void processLaser();
@@ -126,36 +99,6 @@ private:
      * @return the constructed int
      */
     int construct_int(int pos);
-
-    /*!
-     * Checks if a point is in bounds
-     * @param mat the matrix to check with
-     * @param x the x-coordinate
-     * @param y the y-coordinate
-     * @return true if in bounds
-     */
-    bool inBounds(const Mat& mat, int x, int y);
-
-    /*!
-     * Shifts and scales a point to fit into the matrix
-     * @param mat the matrix to fit into
-     * @param point the point to shift/scale
-     * @param min minimum values of original point
-     * @param max maximum values of original point
-     * @return the scaled point, or (-32767, -32767) if point is out of range.
-     */
-    Point convertPoint(const Mat& mat, const Point& pt, const Point& min, const Point& max);
-
-    /*!
-     * Finds the intersection of the line p1p2 and p3p4
-     * @param p1 point 1 of one line
-     * @param p2 point 2 of the first line
-     * @param p3 point 1 of second line
-     * @param p4 point 2 of the second line
-     * @return intersection of the points, or (-32767, -32767) if there is no
-     * intersection
-     */
-    Point intersection(const Point& p1, const Point& p2, const Point& p3, const Point& p4);
 
     enum MSG_PKT {
         HEAD        = 0x00,
@@ -178,26 +121,19 @@ private:
     enum MSG_TYPES {
         POSITION    = 0x01,
         LASER       = 0x05,
-        MAP         = 0x09,
         TEXT        = 0x11,
     };
 
-    char m_img[65536];
-    vector<Image> m_images;
-    vector<Image> m_laser_images;
     vector<unsigned char> m_buf;
     string m_name;
 
-    bool m_gui_running;
-
     struct laser_unit {
-        Point pt;
+        int x;
+        int y;
         bool valid;
     };
 
     struct laser_unit m_laser[360];
-
-    Point m_center;
 
     struct odom_data {
         double count;

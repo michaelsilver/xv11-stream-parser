@@ -3,12 +3,12 @@ TARGET   = parser
 
 CC       = g++
 # compiling flags here
-CFLAGS   = -Wall -I. `Magick++-config --cppflags --cxxflags` `pkg-config opencv --cflags`
+CFLAGS   = -Wall -I. 
 
 LINKER   = g++ -o
 # linking flags here
-LFLAGS   = -Wall -I. -lm `Magick++-config --ldflags`
-LIBS 	 = `Magick++-config --libs` `pkg-config opencv --libs`
+LFLAGS   = -Wall -I. -lm 
+LIBS 	 = 
 
 # change these to set the proper directories where each files shoould be
 SRCDIR   = src

@@ -28,7 +28,7 @@
 using namespace std;
 
 struct args_t {
-    bool cli;           // true if -c is present
+    bool cli;           // Always true in this version
     bool verbose;       // true if -v is present
     bool laser;         // true if -l is present
     bool text;          // true if -t is present
@@ -36,29 +36,27 @@ struct args_t {
     bool odom;          // true if -o is present
     char *filename;     // path to dump file (-f)
     char *serialport;   // path to serial port (-p)
-    char *gifname;      // path to save gif (-g)
-    char *lasergifname; // path to save laser gif (-a)
 } args;
 
-static const char *optstring = "cvltmof:p:g:a:h?";
+static const char *optstring = "vltmof:p:h?";
 
 static const char *activation_cmd = "SetStreamFormat packet\r\n";
     
-parser p("XV-11 Parser", false); 
+parser p("XV-11 Parser"); 
 
 bool done = false;
 
 void displayUsage() {
-    cout << "XV-11 Parser v0.1" << endl;
+    cout << "XV-11 Parser v0.1.1" << endl;
     cout << "Copyright (c) Robert Ying 2012" << endl;
     cout << "Released under the GPLv3" << endl;
+    cout << "Modified by 246Overclocked, January 2015" << endl;
     cout << endl;
     cout << "Usage:" << endl;
-    cout << "\tparser [-cvltm] -f dumpfile [-g gifname] [-a lasergifname]" << endl;
-    cout << "\tparser [-cvltm] -p serialport [-g gifname] [-a lasergifname]" << endl;
+    cout << "\tparser [-vltm] -f dumpfile" << endl;
+    cout << "\tparser [-vltm] -p serialport" << endl;
     cout << endl;
     cout << "Options:" << endl;
-    cout << "\t-c\t\tCLI Mode; all output printed to stdout" << endl;
     cout << "\t-v\t\tVerbose; more data is printed to stdout" << endl;
     cout << "\t-l\t\tLaser messages printed to stdout" << endl;
     cout << "\t-t\t\tText messages printed to stdout" << endl;
@@ -66,8 +64,6 @@ void displayUsage() {
     cout << "\t-o\t\tOdometry messages printed to stdout" << endl;
     cout << "\t-f\t\tPath to serial dump file" << endl;
     cout << "\t-p\t\tSerial device name" << endl;
-    cout << "\t-g\t\tPath to save gif to" << endl;
-    cout << "\t-a\t\tPath to save laser gif to" << endl;
     cout << "\t-h\t\tDisplay usage" << endl;
     cout << endl;
 }
@@ -77,7 +73,7 @@ void term(int signum) {
 }
 
 int main (int argc, char** argv) {
-    args.cli = false;
+    args.cli = true;
     args.laser = false;
     args.text = false;
     args.map = false;
@@ -85,17 +81,12 @@ int main (int argc, char** argv) {
     args.verbose = false;
     args.filename = NULL;
     args.serialport = NULL;
-    args.lasergifname = NULL;
-    args.gifname = NULL;
 
     char c;
 
     // process arguments
     while ((c = getopt(argc, argv, optstring)) != -1) {
         switch(c) {
-            case 'c':
-                args.cli = true;
-                break;
             case 'v':
                 args.verbose = true;
                 break;
@@ -117,12 +108,6 @@ int main (int argc, char** argv) {
             case 'p':
                 args.serialport = optarg;
                 break;
-            case 'g':
-                args.gifname = optarg;
-                break;
-            case 'a':
-                args.lasergifname = optarg;
-                break;
             case 'h':
             case '?':
                 displayUsage();
@@ -141,8 +126,6 @@ int main (int argc, char** argv) {
         return -1;
     }
 
-    p.setGui(!args.cli);
-
     int verbosity = 0;
     verbosity |= (args.verbose ? parser::VERB_DEBUG : 0)
         | (args.laser ? parser::VERB_LASER : 0)
@@ -150,12 +133,6 @@ int main (int argc, char** argv) {
         | (args.map ? parser::VERB_MAP : 0)
         | (args.odom ? parser::VERB_ODOM : 0);
     p.setVerbosity(verbosity);
-
-    if (args.cli) {
-        cout << "Running in command line mode" << endl;
-    } else {
-        cout << "Running in gui mode" << endl;
-    }
 
     // override sigint (ctrl-c)
     signal(SIGINT, term);
@@ -227,15 +204,5 @@ int main (int argc, char** argv) {
             cerr << "Could not open file " << args.filename << endl;
             return -1;
         }
-    }
-
-    if (args.gifname) {
-        cout << "Writing map gif to " << args.gifname << endl;
-        p.writeMap(args.gifname);
-    }
-
-    if (args.lasergifname) {
-        cout << "Writing laser gif to " << args.lasergifname << endl;
-        p.writeAnim(args.lasergifname);
     }
 }
